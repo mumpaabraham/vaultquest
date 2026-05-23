@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "VaultQuest",
+    "slug": "vaultquest",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#080c18"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.vaultquest.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#080c18"
+      },
+      "package": "com.vaultquest.app",
+      "permissions": []
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png",
+      "name": "VaultQuest",
+      "backgroundColor": "#080c18"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "vaultquest",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "fa51d2a5-7499-4d1a-b1c5-33a5af3fcf06"
+      }
+    },
+    "owner": "mumpa"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(@\\(\"expo\", \"expo-router\", \"firebase\", \"react-native\", \"react-native-svg\", \"expo-linear-gradient\", \"expo-clipboard\", \"zustand\"\\) | ForEach-Object { $p = \"c:\\\\sites\\\\VaultQuest\\\\node_modules\\\\$_\"; if \\(Test-Path $p\\) { \"✓ $_\" } else { \"✗ $_ MISSING\" } })",
+      "PowerShell(npm install -g eas-cli 2>&1)",
+      "PowerShell(Start-Sleep -Seconds 10; $cmd = Get-Command eas -ErrorAction SilentlyContinue; if \\($cmd\\) { $cmd.Source } else { \"not found yet\" })"
+    ]
+  }
+}

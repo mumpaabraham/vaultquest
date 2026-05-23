@@ -1,0 +1,97 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // ── Users ──────────────────────────────────────────────────────────────────
+    // Any signed-in user can read profiles (leaderboard queries + referral lookups).
+    // Only the owner may write their own document; subcollections are always private.
+    match /users/{userId} {
+      allow get:  if isSignedIn();
+      allow list: if isSignedIn();
+
+      // Registration: enforce sane starting values so no one can spawn an
+      // account with a pre-loaded balance or elevated level.
+      allow create: if isSignedIn()
+        && isOwner(userId)
+        && request.resource.data.keys().hasAll([
+             'displayName', 'email', 'level', 'xp', 'walletBalance',
+             'referralCode', 'freeSpinsAvailable'
+           ])
+        && request.resource.data.level        == 1
+        && request.resource.data.xp           == 0
+        && request.resource.data.walletBalance == 0;
+
+      // Owner may update their own profile (level-ups, balance changes, etc.).
+      // They cannot change their own uid or email through Firestore.
+      allow update: if isSignedIn()
+        && isOwner(userId)
+        && request.resource.data.email == resource.data.email;
+
+      allow delete: if false;
+
+      // ── Vaults ───────────────────────────────────────────────────────────────
+      // Only the account owner may read or manage their investment vaults.
+      match /vaults/{vaultId} {
+        allow read: if isSignedIn() && isOwner(userId);
+
+        // Require the essential fields and a valid starting state.
+        allow create: if isSignedIn()
+          && isOwner(userId)
+          && request.resource.data.keys().hasAll([
+               'tierId', 'tierName', 'invested', 'dailyEarnings',
+               'durationDays', 'status', 'startDate', 'endDate',
+               'totalEarned', 'lastPayout'
+             ])
+          && request.resource.data.status      == 'active'
+          && request.resource.data.totalEarned == 0
+          && request.resource.data.invested     >  0;
+
+        // Only allow updating mutable earning fields.
+        // Core fields (tierId, invested, startDate, endDate) are immutable.
+        allow update: if isSignedIn()
+          && isOwner(userId)
+          && request.resource.data.tierId     == resource.data.tierId
+          && request.resource.data.invested   == resource.data.invested
+          && request.resource.data.startDate  == resource.data.startDate
+          && request.resource.data.endDate    == resource.data.endDate;
+
+        allow delete: if false;
+      }
+
+      // ── Spin History ─────────────────────────────────────────────────────────
+      // Write-once records — no updates or deletes permitted.
+      match /spinHistory/{spinId} {
+        allow read: if isSignedIn() && isOwner(userId);
+
+        allow create: if isSignedIn()
+          && isOwner(userId)
+          && request.resource.data.keys().hasAll(['label', 'type', 'value', 'timestamp'])
+          && request.resource.data.type in ['cash', 'xp', 'boost', 'spin_bonus'];
+
+        allow update, delete: if false;
+      }
+
+      // ── Transactions ─────────────────────────────────────────────────────────
+      // Immutable ledger — no updates or deletes ever permitted.
+      match /transactions/{txId} {
+        allow read: if isSignedIn() && isOwner(userId);
+
+        allow create: if isSignedIn()
+          && isOwner(userId)
+          && request.resource.data.keys().hasAll(['type', 'amount', 'description', 'timestamp'])
+          && request.resource.data.type in ['deposit', 'withdrawal', 'earning', 'referral'];
+
+        allow update, delete: if false;
+      }
+    }
+  }
+}
