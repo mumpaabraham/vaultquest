@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1064447795441",
+    "project_id": "vaultquest-app",
+    "storage_bucket": "vaultquest-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1064447795441:android:e71bcf2cf23b68445ec950",
+        "android_client_info": {
+          "package_name": "com.vaultquest.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhSgYo9JNsn2JL9EFgzzlvO73dMnv91qw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

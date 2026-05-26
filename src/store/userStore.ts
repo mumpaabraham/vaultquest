@@ -18,7 +18,8 @@ interface UserState {
   fetchVaults: (uid: string) => Promise<void>;
   fetchSpinHistory: (uid: string) => Promise<void>;
   fetchTransactions: (uid: string) => Promise<void>;
-  processEarnings: (uid: string) => Promise<void>;
+  processEarnings: (uid: string) => Promise<number>;
+  patchProfile: (patch: Partial<UserProfile>) => void;
   reset: () => void;
 }
 
@@ -51,10 +52,16 @@ export const useUserStore = create<UserState>((set) => ({
   },
 
   processEarnings: async (uid) => {
-    await processDailyEarnings(uid);
-    const profile = await getUser(uid);
-    set({ profile });
+    const earned = await processDailyEarnings(uid);
+    const [profile, vaults] = await Promise.all([getUser(uid), getUserVaults(uid)]);
+    set({ profile, vaults });
+    return earned;
   },
+
+  patchProfile: (patch) =>
+    set(state => ({
+      profile: state.profile ? { ...state.profile, ...patch } : state.profile,
+    })),
 
   reset: () =>
     set({ profile: null, vaults: [], spinHistory: [], transactions: [], loading: false }),

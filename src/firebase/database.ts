@@ -5,7 +5,6 @@ import {
   collection,
   addDoc,
   query,
-  where,
   orderBy,
   getDocs,
   serverTimestamp,
@@ -16,6 +15,7 @@ import {
 import { db } from './config';
 import { Vault, SpinResult, Transaction, UserProfile } from '../types';
 import { TIERS } from '../constants/tiers';
+import { trackAction } from './missions';
 
 // ─── User ────────────────────────────────────────────────────────────────────
 
@@ -54,29 +54,10 @@ export const completeDailyCheckIn = async (uid: string) => {
   if (!snap.exists()) return false;
   const lastCheckIn = snap.data().lastDailyCheckIn?.toDate();
   if (lastCheckIn && lastCheckIn >= today) return false;
-  await updateDoc(doc(db, 'users', uid), {
-    lastDailyCheckIn: serverTimestamp(),
-  });
+  await updateDoc(doc(db, 'users', uid), { lastDailyCheckIn: serverTimestamp() });
   await addXP(uid, 5);
+  trackAction('check_in');
   return true;
-};
-
-// ─── Daily Chest ─────────────────────────────────────────────────────────────
-
-export const openDailyChest = async (uid: string): Promise<number | null> => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const snap = await getDoc(doc(db, 'users', uid));
-  if (!snap.exists()) return null;
-  const last = snap.data().dailyChestLastOpened?.toDate();
-  if (last && last >= today) return null;
-  const reward = parseFloat((Math.random() * 2 + 0.5).toFixed(2));
-  await updateDoc(doc(db, 'users', uid), {
-    dailyChestLastOpened: serverTimestamp(),
-    walletBalance: increment(reward),
-  });
-  await logTransaction(uid, 'earning', reward, 'Daily chest reward');
-  return reward;
 };
 
 // ─── Vaults ──────────────────────────────────────────────────────────────────
@@ -111,6 +92,7 @@ export const createVault = async (uid: string, tierId: string): Promise<string> 
     walletBalance: increment(-tier.price),
   });
   await logTransaction(uid, 'deposit', -tier.price, `${tier.name} Vault investment`);
+  trackAction('invest');
 
   return vaultRef.id;
 };
@@ -133,6 +115,7 @@ export const processDailyEarnings = async (uid: string) => {
     if (vault.status !== 'active') continue;
     const endDate = (vault.endDate as unknown as Timestamp).toDate();
     const lastPayout = (vault.lastPayout as unknown as Timestamp).toDate();
+    // Require a full 24-hour period since last payout (or since purchase for first claim)
     const daysSincePayout = Math.floor(
       (now.getTime() - lastPayout.getTime()) / (1000 * 60 * 60 * 24)
     );
@@ -160,34 +143,47 @@ export const processDailyEarnings = async (uid: string) => {
 
 // ─── Lucky Spin ──────────────────────────────────────────────────────────────
 
+// betAmount = 0 means free spin; >0 means paid spin.
+// Free spin: wins the fixed segment value; updates lastSpinTime.
+// Paid spin: costs betAmount, cash win = betAmount × segment.value; lastSpinTime unchanged.
 export const recordSpin = async (
   uid: string,
-  result: SpinResult
+  result: SpinResult,
+  betAmount = 0,
 ): Promise<void> => {
+  const isFree     = betAmount === 0;
+  const multiplier = result.multiplier ?? result.value;
+  const cashWin    = result.type === 'cash'
+    ? parseFloat((isFree ? result.value : betAmount * multiplier).toFixed(2))
+    : 0;
+  // Net wallet delta: free = +win; paid = win - cost (can be negative)
+  const walletDelta = parseFloat((cashWin - (isFree ? 0 : betAmount)).toFixed(2));
+
   await addDoc(collection(db, 'users', uid, 'spinHistory'), {
-    ...result,
+    label: result.label,
+    type:  result.type,
+    value: result.value,
+    betAmount,
+    actualWin: cashWin,
     timestamp: serverTimestamp(),
   });
 
-  if (result.type === 'cash') {
-    await updateDoc(doc(db, 'users', uid), {
-      walletBalance: increment(result.value),
-      lastSpinTime: serverTimestamp(),
-      freeSpinsAvailable: increment(-1),
-    });
-    await logTransaction(uid, 'earning', result.value, 'Lucky spin reward');
-  } else if (result.type === 'xp') {
-    await addXP(uid, result.value);
-    await updateDoc(doc(db, 'users', uid), {
-      lastSpinTime: serverTimestamp(),
-      freeSpinsAvailable: increment(-1),
-    });
-  } else {
-    await updateDoc(doc(db, 'users', uid), {
-      lastSpinTime: serverTimestamp(),
-      freeSpinsAvailable: increment(-1),
-    });
+  if (result.type === 'xp') await addXP(uid, result.value);
+
+  const userUpdates: Record<string, unknown> = {};
+  if (isFree) userUpdates.lastSpinTime = serverTimestamp();
+  if (walletDelta !== 0) userUpdates.walletBalance = increment(walletDelta);
+
+  if (Object.keys(userUpdates).length > 0) {
+    await updateDoc(doc(db, 'users', uid), userUpdates);
   }
+
+  const desc = isFree
+    ? `Free spin – ${result.label}`
+    : `Spin (K${betAmount} bet) – ${result.label}`;
+  if (walletDelta !== 0) await logTransaction(uid, 'earning', walletDelta, desc);
+
+  trackAction('spin');
 };
 
 export const getSpinHistory = async (uid: string): Promise<SpinResult[]> => {
@@ -198,24 +194,6 @@ export const getSpinHistory = async (uid: string): Promise<SpinResult[]> => {
   );
   const snaps = await getDocs(q);
   return snaps.docs.map((d) => ({ id: d.id, ...d.data() } as SpinResult));
-};
-
-// ─── Referrals ───────────────────────────────────────────────────────────────
-
-export const processReferralBonus = async (
-  referrerId: string,
-  depositAmount: number,
-  level: 1 | 2 | 3
-) => {
-  const rates: Record<number, number> = { 1: 0.1, 2: 0.02, 3: 0.01 };
-  const bonus = depositAmount * rates[level];
-  if (bonus <= 0) return;
-
-  await updateDoc(doc(db, 'users', referrerId), {
-    walletBalance: increment(bonus),
-    totalReferralEarnings: increment(bonus),
-  });
-  await logTransaction(referrerId, 'referral', bonus, `Level ${level} referral bonus`);
 };
 
 // ─── Leaderboard ─────────────────────────────────────────────────────────────
@@ -256,7 +234,7 @@ export const getTransactions = async (uid: string): Promise<Transaction[]> => {
   const q = query(
     collection(db, 'users', uid, 'transactions'),
     orderBy('timestamp', 'desc'),
-    limit(20)
+    limit(50)
   );
   const snaps = await getDocs(q);
   return snaps.docs.map((d) => ({ id: d.id, ...d.data() } as Transaction));

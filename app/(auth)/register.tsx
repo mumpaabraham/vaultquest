@@ -9,6 +9,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -50,8 +51,11 @@ export default function Register() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.logoWrap}>
-            <Text style={styles.appName}>VAULT QUEST</Text>
-            <Text style={styles.tagline}>PLAY. EARN. GROW.</Text>
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
           </View>
 
           <View style={styles.card}>
@@ -129,9 +133,8 @@ export default function Register() {
 const styles = StyleSheet.create({
   bg: { flex: 1 },
   scroll: { flexGrow: 1, justifyContent: 'center', padding: 24 },
-  logoWrap: { alignItems: 'center', marginBottom: 32 },
-  appName: { fontSize: 28, fontWeight: '900', color: COLORS.gold, letterSpacing: 4 },
-  tagline: { fontSize: 12, color: COLORS.textSecondary, letterSpacing: 3, marginTop: 4 },
+  logoWrap: { alignItems: 'center', marginBottom: 24 },
+  logo: { width: 200, height: 136 },
   card: {
     backgroundColor: 'rgba(255,255,255,0.04)',
     borderRadius: 20,

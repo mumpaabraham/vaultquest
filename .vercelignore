@@ -1,0 +1,8 @@
+android/
+functions/
+admin/
+.firebase/
+node_modules/
+*.apk
+*.aab
+google-services.json

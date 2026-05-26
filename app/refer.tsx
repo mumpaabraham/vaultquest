@@ -9,17 +9,17 @@ import {
   Share,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+import { PageHeader } from '../src/components/PageHeader';
 import { COLORS } from '../src/constants/colors';
 import { useUserStore } from '../src/store/userStore';
 import { formatCurrency } from '../src/utils/helpers';
 
 const LEVELS = [
-  { level: 1, pct: '10%', label: 'On First Deposit', color: COLORS.gold },
-  { level: 2, pct: '2%', label: 'On First Deposit', color: COLORS.blue },
-  { level: 3, pct: '1%', label: 'On Their Deposit', color: COLORS.green },
+  { level: 1, pct: '10%', label: 'On every deposit', color: COLORS.gold },
+  { level: 2, pct: '5%',  label: 'On every deposit', color: COLORS.blue },
+  { level: 3, pct: '3%',  label: 'On every deposit', color: COLORS.green },
 ];
 
 export default function ReferScreen() {
@@ -50,14 +50,7 @@ export default function ReferScreen() {
 
   return (
     <LinearGradient colors={['#080c18', '#0f1729']} style={styles.bg}>
-      {/* Header */}
-      <LinearGradient colors={['#0d1526', '#080c18']} style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={COLORS.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>REFER & EARN</Text>
-        <View style={{ width: 40 }} />
-      </LinearGradient>
+      <PageHeader title="REFER & EARN" />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Intro */}
@@ -101,16 +94,17 @@ export default function ReferScreen() {
 
         {/* Commission levels */}
         <Text style={styles.sectionTitle}>Your Commission Levels</Text>
-        <View style={styles.levelsCard}>
-          {LEVELS.map((l, i) => (
-            <View key={l.level} style={[styles.levelItem, i < LEVELS.length - 1 && styles.levelBorder]}>
-              <View style={[styles.levelBadge, { backgroundColor: l.color + '22', borderColor: l.color }]}>
+        <View style={styles.levelsRow}>
+          {LEVELS.map((l) => (
+            <View key={l.level} style={[styles.levelCard, { borderColor: l.color + '55' }]}>
+              <LinearGradient
+                colors={[l.color + '22', l.color + '0a']}
+                style={styles.levelCardInner}
+              >
                 <Text style={[styles.levelNum, { color: l.color }]}>Level {l.level}</Text>
-              </View>
-              <View style={styles.levelContent}>
                 <Text style={[styles.levelPct, { color: l.color }]}>{l.pct}</Text>
                 <Text style={styles.levelLabel}>{l.label}</Text>
-              </View>
+              </LinearGradient>
             </View>
           ))}
         </View>
@@ -137,25 +131,6 @@ export default function ReferScreen() {
 
 const styles = StyleSheet.create({
   bg: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 56,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: { fontSize: 18, fontWeight: '900', color: COLORS.gold, letterSpacing: 2 },
   scroll: { padding: 16, gap: 16, paddingBottom: 40 },
   introCard: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: COLORS.border },
   introInner: { padding: 20, alignItems: 'center', gap: 8 },
@@ -211,32 +186,24 @@ const styles = StyleSheet.create({
   },
   shareBtnText: { color: '#fff', fontWeight: '800', fontSize: 14, letterSpacing: 1 },
   sectionTitle: { fontSize: 16, fontWeight: '800', color: COLORS.textPrimary },
-  levelsCard: {
-    borderRadius: 16,
+  levelsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  levelCard: {
+    flex: 1,
+    borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: 'rgba(255,255,255,0.03)',
   },
-  levelItem: {
-    flexDirection: 'row',
+  levelCardInner: {
+    padding: 14,
     alignItems: 'center',
-    gap: 14,
-    padding: 16,
+    gap: 4,
   },
-  levelBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  levelBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 1,
-    minWidth: 72,
-    alignItems: 'center',
-  },
-  levelNum: { fontSize: 12, fontWeight: '800' },
-  levelContent: { flex: 1 },
-  levelPct: { fontSize: 22, fontWeight: '900' },
-  levelLabel: { fontSize: 12, color: COLORS.textSecondary },
+  levelNum: { fontSize: 11, fontWeight: '800' },
+  levelPct: { fontSize: 24, fontWeight: '900' },
+  levelLabel: { fontSize: 10, color: COLORS.textSecondary, textAlign: 'center' },
   statsRow: { flexDirection: 'row', gap: 12 },
   stat: {
     flex: 1,

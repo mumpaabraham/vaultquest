@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useReducer } from 'react';
 import {
   View,
   Text,
@@ -19,17 +19,21 @@ import { getLevelTierName, getLevelTierColor } from '../../src/constants/tiers';
 import { LevelProgress } from '../../src/components/LevelProgress';
 
 const MENU_ITEMS = [
-  { icon: 'wallet-outline', label: 'Deposit Funds', route: '/deposit' },
-  { icon: 'people-outline', label: 'Refer & Earn', route: '/refer' },
-  { icon: 'bar-chart-outline', label: 'Leaderboard', route: '/leaderboard' },
-  { icon: 'receipt-outline', label: 'Transaction History', route: null },
-  { icon: 'settings-outline', label: 'Settings', route: null },
-  { icon: 'help-circle-outline', label: 'Help & Support', route: null },
+  { icon: 'wallet-outline',      label: 'Deposit',   route: '/deposit',    color: '#f59e0b', logout: false },
+  { icon: 'cash-outline',        label: 'Withdraw',  route: '/withdraw',   color: '#22c55e', logout: false },
+  { icon: 'people-outline',      label: 'Refer',     route: '/refer',      color: '#a78bfa', logout: false },
+  { icon: 'bar-chart-outline',   label: 'Ranks',     route: '/leaderboard',color: '#3b82f6', logout: false },
+  { icon: 'receipt-outline',     label: 'History',   route: '/history',    color: '#9ca3af', logout: false },
+  { icon: 'settings-outline',    label: 'Settings',  route: null,          color: '#94a3b8', logout: false },
+  { icon: 'download-outline',    label: 'Download',  route: '/download',   color: '#22d3ee', logout: false },
+  { icon: 'log-out-outline',     label: 'Sign Out',  route: null,          color: '#ef4444', logout: true  },
 ];
 
 export default function ProfileScreen() {
   const { user } = useAuthStore();
   const { profile } = useUserStore();
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
+  useEffect(() => { forceUpdate(); }, []);
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -105,31 +109,25 @@ export default function ProfileScreen() {
           </LinearGradient>
         </View>
 
-        {/* Menu */}
-        <View style={styles.menuCard}>
-          {MENU_ITEMS.map((item, i) => (
+        {/* Menu Grid */}
+        <View style={styles.menuGrid}>
+          {MENU_ITEMS.map((item) => (
             <TouchableOpacity
               key={item.label}
-              style={[styles.menuItem, i < MENU_ITEMS.length - 1 && styles.menuItemBorder]}
+              style={styles.menuGridItem}
               activeOpacity={0.75}
-              onPress={() => item.route && router.push(item.route as any)}
+              onPress={() => {
+                if (item.logout) { handleLogout(); return; }
+                if (item.route) router.push(item.route as any);
+              }}
             >
-              <View style={styles.menuLeft}>
-                <View style={styles.menuIcon}>
-                  <Ionicons name={item.icon as any} size={20} color={COLORS.gold} />
-                </View>
-                <Text style={styles.menuLabel}>{item.label}</Text>
+              <View style={styles.menuIcon}>
+                <Ionicons name={item.icon as any} size={22} color={item.color} />
               </View>
-              <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
+              <Text style={[styles.menuLabel, item.logout && { color: '#ef4444' }]}>{item.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
-
-        {/* Sign out */}
-        <TouchableOpacity onPress={handleLogout} activeOpacity={0.85} style={styles.logoutBtn}>
-          <Ionicons name="log-out-outline" size={20} color={COLORS.red} />
-          <Text style={styles.logoutText}>Sign Out</Text>
-        </TouchableOpacity>
       </ScrollView>
     </LinearGradient>
   );
@@ -137,7 +135,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   bg: { flex: 1 },
-  scroll: { padding: 16, paddingTop: 56, gap: 16, paddingBottom: 32 },
+  scroll: { padding: 16, paddingTop: 48, gap: 12, paddingBottom: 24 },
   profileCard: {
     borderRadius: 20,
     padding: 24,
@@ -189,41 +187,23 @@ const styles = StyleSheet.create({
   },
   referralCode: { fontSize: 20, fontWeight: '900', color: COLORS.gold, letterSpacing: 3 },
   referralEarned: { fontSize: 13, color: COLORS.textSecondary },
-  menuCard: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-  },
-  menuItem: {
+  menuGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    flexWrap: 'wrap',
+    gap: 10,
   },
-  menuItemBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  menuLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  menuGridItem: {
+    width: '22%',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+  },
   menuIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: 'rgba(245,158,11,0.1)',
+    width: 46,
+    height: 46,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuLabel: { fontSize: 15, color: COLORS.textPrimary, fontWeight: '500' },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: COLORS.red + '50',
-    backgroundColor: COLORS.red + '10',
-  },
-  logoutText: { fontSize: 15, color: COLORS.red, fontWeight: '700' },
+  menuLabel: { fontSize: 11, color: COLORS.textPrimary, fontWeight: '600', textAlign: 'center' },
 });

@@ -15,6 +15,7 @@ import { getLeaderboard } from '../src/firebase/database';
 import { LeaderboardEntry } from '../src/types';
 import { getLevelTierColor, getLevelTierName } from '../src/constants/tiers';
 import { useAuthStore } from '../src/store/authStore';
+import { PageHeader } from '../src/components/PageHeader';
 
 const RANK_COLORS = ['#f59e0b', '#9ca3af', '#cd7f32'];
 const RANK_EMOJIS = ['🥇', '🥈', '🥉'];
@@ -32,17 +33,7 @@ export default function LeaderboardScreen() {
 
   return (
     <LinearGradient colors={['#080c18', '#0f1729']} style={styles.bg}>
-      {/* Header */}
-      <LinearGradient colors={['#0d1526', '#080c18']} style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={COLORS.textPrimary} />
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>LEADERBOARD</Text>
-          <Text style={styles.headerSub}>Top Players</Text>
-        </View>
-        <View style={{ width: 40 }} />
-      </LinearGradient>
+      <PageHeader title="LEADERBOARD" subtitle="Top Players" />
 
       {loading ? (
         <View style={styles.center}>
@@ -150,27 +141,6 @@ export default function LeaderboardScreen() {
 
 const styles = StyleSheet.create({
   bg: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 56,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerCenter: { alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: '900', color: COLORS.gold, letterSpacing: 3 },
-  headerSub: { fontSize: 12, color: COLORS.textSecondary },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   scroll: { padding: 16, gap: 16, paddingBottom: 40 },
   podium: {

@@ -17,6 +17,7 @@ export interface UserProfile {
   freeSpinsAvailable: number;
   dailyChestLastOpened: Timestamp | null;
   createdAt: Timestamp;
+  mobileMoney?: { provider: string; number: string; accountName?: string };
 }
 
 export interface Vault {
@@ -50,6 +51,7 @@ export interface SpinResult {
   label: string;
   type: 'cash' | 'xp' | 'boost' | 'spin_bonus';
   value: number;
+  multiplier?: number;
   duration?: number;
   timestamp?: Timestamp;
 }
@@ -57,10 +59,12 @@ export interface SpinResult {
 export interface WheelSegment {
   label: string;
   type: SpinResult['type'];
-  value: number;
+  value: number;       // free-spin prize (cash) or reward quantity (xp/boost)
+  multiplier?: number; // paid-spin cash multiplier; falls back to value if absent
   duration?: number;
   color: string;
   textColor: string;
+  weight?: number;
 }
 
 export interface Mission {
@@ -88,4 +92,27 @@ export interface LeaderboardEntry {
   displayName: string;
   level: number;
   xp: number;
+}
+
+export interface Withdrawal {
+  id?: string;
+  amount: number;
+  charge: number;
+  netAmount: number;
+  mobileProvider: string;
+  mobileNumber: string;
+  accountName?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: Timestamp;
+  processedAt?: Timestamp | null;
+  note?: string | null;
+}
+
+export interface WithdrawalSettings {
+  chargePercent: number;
+  chargeFlat: number;
+  minAmount: number;
+  maxAmount: number;
+  dailyLimitCount: number;
+  dailyLimitAmount: number;
 }

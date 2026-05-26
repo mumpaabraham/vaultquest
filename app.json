@@ -4,10 +4,10 @@
     "slug": "vaultquest",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#080c18"
     },
@@ -20,15 +20,16 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#080c18"
       },
       "package": "com.vaultquest.app",
+      "googleServicesFile": "./google-services.json",
       "permissions": []
     },
     "web": {
       "bundler": "metro",
-      "favicon": "./assets/favicon.png",
+      "favicon": "./assets/logo.png",
       "name": "VaultQuest",
       "backgroundColor": "#080c18"
     },

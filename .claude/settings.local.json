@@ -3,7 +3,31 @@
     "allow": [
       "PowerShell(@\\(\"expo\", \"expo-router\", \"firebase\", \"react-native\", \"react-native-svg\", \"expo-linear-gradient\", \"expo-clipboard\", \"zustand\"\\) | ForEach-Object { $p = \"c:\\\\sites\\\\VaultQuest\\\\node_modules\\\\$_\"; if \\(Test-Path $p\\) { \"✓ $_\" } else { \"✗ $_ MISSING\" } })",
       "PowerShell(npm install -g eas-cli 2>&1)",
-      "PowerShell(Start-Sleep -Seconds 10; $cmd = Get-Command eas -ErrorAction SilentlyContinue; if \\($cmd\\) { $cmd.Source } else { \"not found yet\" })"
+      "PowerShell(Start-Sleep -Seconds 10; $cmd = Get-Command eas -ErrorAction SilentlyContinue; if \\($cmd\\) { $cmd.Source } else { \"not found yet\" })",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"c:\\\\sites\\\\VaultQuest\\\\assets\\\\fonts\")",
+      "PowerShell(Copy-Item \"c:\\\\sites\\\\VaultQuest\\\\node_modules\\\\@expo\\\\vector-icons\\\\build\\\\vendor\\\\react-native-vector-icons\\\\Fonts\\\\Ionicons.ttf\" \"c:\\\\sites\\\\VaultQuest\\\\assets\\\\fonts\\\\Ionicons.ttf\")",
+      "PowerShell(Copy-Item \"c:\\\\sites\\\\VaultQuest\\\\node_modules\\\\@expo\\\\vector-icons\\\\build\\\\vendor\\\\react-native-vector-icons\\\\Fonts\\\\MaterialIcons.ttf\" \"c:\\\\sites\\\\VaultQuest\\\\assets\\\\fonts\\\\MaterialIcons.ttf\")",
+      "Bash(npm run *)",
+      "Bash(firebase deploy *)",
+      "Bash(npm install *)",
+      "Bash(Read \"C:\\\\Users\\\\mumpa\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--sites-VaultQuest\\\\5d65a88e-ebf6-4eb4-86b5-2fad3fe1cd25\\\\tasks\\\\br6f8t326.output\")",
+      "Bash(npx tsc *)",
+      "Bash(node -e \"require\\('firebase-functions/v2/firestore'\\); console.log\\('ok'\\)\")",
+      "Bash(Test-Path \"c:\\\\sites\\\\VaultQuest\\\\admin\\\\node_modules\")",
+      "Bash(firebase hosting:sites:create vaultquest-admin)",
+      "Bash(firebase target:apply hosting app vaultquest-app)",
+      "Bash(firebase target:apply hosting admin vaultquest-admin)",
+      "Bash(firebase projects:list)",
+      "Bash(firebase --version)",
+      "Bash(Select-String -Path \"c:\\\\sites\\\\VaultQuest\\\\app\\\\leaderboard.tsx\",\"c:\\\\sites\\\\VaultQuest\\\\app\\\\deposit.tsx\",\"c:\\\\sites\\\\VaultQuest\\\\app\\\\withdraw.tsx\",\"c:\\\\sites\\\\VaultQuest\\\\app\\\\history.tsx\",\"c:\\\\sites\\\\VaultQuest\\\\app\\\\refer.tsx\" -Pattern \"fontSize|paddingTop|paddingBottom|header\")",
+      "Bash(Select-Object Filename,LineNumber,Line)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); const keys = Object.keys\\({...p.dependencies, ...p.devDependencies}\\); keys.filter\\(k => k.includes\\('notif'\\) || k.includes\\('firebase'\\) || k.includes\\('messaging'\\)\\).forEach\\(k => console.log\\(k\\)\\)\")",
+      "Bash(node -e \"const a = require\\('./app.json'\\); console.log\\(JSON.stringify\\(a.expo?.extra, null, 2\\)\\); console.log\\('slug:', a.expo?.slug\\); console.log\\('projectId from eas:', a.expo?.extra?.eas?.projectId\\)\")",
+      "Bash(node -e \"const p = require\\('./functions/package.json'\\); console.log\\(JSON.stringify\\(p.dependencies, null, 2\\)\\)\")",
+      "Bash(npx expo *)",
+      "Bash(java -version)",
+      "PowerShell(java -version; echo \"ANDROID_HOME: $env:ANDROID_HOME\"; echo \"JAVA_HOME: $env:JAVA_HOME\")",
+      "PowerShell(Test-Path \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\"; ls \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\" -ErrorAction SilentlyContinue | Select-Object Name)"
     ]
   }
 }

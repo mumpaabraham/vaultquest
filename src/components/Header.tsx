@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../constants/colors';
 import { formatCurrency } from '../utils/helpers';
 
+export type HeaderVariant = 'transparent' | 'solid';
+
 interface HeaderProps {
   displayName: string;
   level: number;
@@ -12,6 +14,7 @@ interface HeaderProps {
   avatarUrl?: string;
   onNotification?: () => void;
   onAddFunds?: () => void;
+  variant?: HeaderVariant;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -21,6 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
   avatarUrl,
   onNotification,
   onAddFunds,
+  variant = 'solid',
 }) => {
   const initials = displayName
     .split(' ')
@@ -29,8 +33,12 @@ export const Header: React.FC<HeaderProps> = ({
     .toUpperCase()
     .slice(0, 2);
 
+  const gradientColors = variant === 'transparent'
+    ? (['transparent', 'transparent'] as const)
+    : (['#0d1526', '#080c18'] as const);
+
   return (
-    <LinearGradient colors={['#0d1526', '#080c18']} style={styles.container}>
+    <LinearGradient colors={gradientColors} style={styles.container}>
       {/* Avatar + Name */}
       <TouchableOpacity style={styles.userRow} activeOpacity={0.8}>
         <View style={styles.avatar}>
@@ -40,7 +48,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Text style={styles.avatarText}>{initials}</Text>
           )}
         </View>
-        <View>
+        <View style={styles.namePill}>
           <Text style={styles.name}>{displayName}</Text>
           <Text style={styles.level}>Level {level}</Text>
         </View>
@@ -53,12 +61,12 @@ export const Header: React.FC<HeaderProps> = ({
             <Ionicons name="logo-bitcoin" size={16} color={COLORS.gold} />
             <Text style={styles.balance}>{formatCurrency(walletBalance)}</Text>
             <View style={styles.addBtn}>
-              <Ionicons name="add" size={14} color="#fff" />
+              <Text style={styles.addIcon}>+</Text>
             </View>
           </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity onPress={onNotification} style={styles.notifBtn} activeOpacity={0.85}>
-          <Ionicons name="notifications-outline" size={22} color={COLORS.textSecondary} />
+          <Image source={require('../../assets/notifications.png')} style={styles.notifIcon} resizeMode="contain" />
         </TouchableOpacity>
       </View>
     </LinearGradient>
@@ -98,14 +106,23 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 16,
   },
+  namePill: {
+    backgroundColor: 'rgba(8,12,24,0.75)',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
   name: {
     color: COLORS.textPrimary,
     fontWeight: '700',
     fontSize: 15,
   },
   level: {
-    color: COLORS.textSecondary,
-    fontSize: 12,
+    color: COLORS.gold,
+    fontSize: 11,
+    fontWeight: '600',
   },
   right: {
     flexDirection: 'row',
@@ -139,6 +156,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  addIcon: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '900',
+    lineHeight: 18,
+  },
   notifBtn: {
     width: 38,
     height: 38,
@@ -146,5 +169,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.06)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  notifIcon: {
+    width: 26,
+    height: 26,
   },
 });

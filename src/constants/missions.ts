@@ -1,95 +1,128 @@
-import { Mission } from '../types';
+export type MissionType = 'daily' | 'weekly' | 'achievement';
 
-export const DAILY_MISSIONS: Omit<Mission, 'completedAt'>[] = [
-  {
+export interface MissionDef {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  type: MissionType;
+  rewardXP: number;
+  rewardCash: number;
+  target?: number;
+}
+
+export const MISSIONS_CONFIG: Record<string, MissionDef> = {
+  daily_login: {
+    id: 'daily_login',
+    title: 'Daily Login',
+    description: 'Open the app today',
+    icon: 'log-in-outline',
+    type: 'daily',
+    rewardXP: 10,
+    rewardCash: 0,
+  },
+  daily_checkin: {
     id: 'daily_checkin',
-    title: 'Daily Check-in',
-    description: 'Open the app and check in today',
-    xpReward: 5,
+    title: 'Daily Check-In',
+    description: 'Claim your daily reward',
+    icon: 'calendar-outline',
     type: 'daily',
+    rewardXP: 15,
+    rewardCash: 0,
   },
-  {
-    id: 'spin_wheel',
-    title: 'Spin the Wheel',
-    description: 'Spin the lucky wheel',
-    xpReward: 10,
+  daily_chest: {
+    id: 'daily_chest',
+    title: 'Open Daily Chest',
+    description: 'Open your free daily chest',
+    icon: 'gift-outline',
     type: 'daily',
+    rewardXP: 20,
+    rewardCash: 0,
   },
-  {
-    id: 'complete_2_quests',
-    title: 'Complete 2 Quests',
-    description: 'Complete any 2 missions',
-    xpReward: 20,
+  daily_spin: {
+    id: 'daily_spin',
+    title: 'Lucky Spin',
+    description: 'Spin the lucky wheel once',
+    icon: 'radio-button-on-outline',
     type: 'daily',
-    progress: 0,
-    target: 2,
+    rewardXP: 15,
+    rewardCash: 0,
   },
-  {
-    id: 'invite_friend',
-    title: 'Invite 1 Friend',
-    description: 'Invite a friend to join',
-    xpReward: 25,
-    type: 'daily',
-  },
-  {
-    id: 'play_20_minutes',
-    title: 'Play for 20 Minutes',
-    description: 'Stay in the game for 20 min.',
-    xpReward: 15,
-    type: 'daily',
-  },
-];
-
-export const WEEKLY_MISSIONS: Omit<Mission, 'completedAt'>[] = [
-  {
-    id: 'weekly_invest',
-    title: 'Make an Investment',
-    description: 'Invest in any vault this week',
-    xpReward: 100,
-    type: 'weekly',
-  },
-  {
-    id: 'weekly_referral',
-    title: 'Refer 3 Friends',
-    description: 'Get 3 friends to sign up',
-    xpReward: 200,
-    type: 'weekly',
-    progress: 0,
-    target: 3,
-  },
-  {
+  weekly_spin_5: {
     id: 'weekly_spin_5',
     title: 'Spin 5 Times',
-    description: 'Use the lucky spin 5 times',
-    xpReward: 75,
+    description: 'Use the lucky spin 5 times this week',
+    icon: 'refresh-circle-outline',
     type: 'weekly',
-    progress: 0,
+    rewardXP: 75,
+    rewardCash: 0,
     target: 5,
   },
-];
-
-export const ACHIEVEMENT_MISSIONS: Omit<Mission, 'completedAt'>[] = [
-  {
+  weekly_referral_3: {
+    id: 'weekly_referral_3',
+    title: 'Refer 3 Friends',
+    description: 'Get 3 friends to join this week',
+    icon: 'people-circle-outline',
+    type: 'weekly',
+    rewardXP: 200,
+    rewardCash: 0,
+    target: 3,
+  },
+  weekly_invest: {
+    id: 'weekly_invest',
+    title: 'Make Investment',
+    description: 'Invest in any vault this week',
+    icon: 'trending-up-outline',
+    type: 'weekly',
+    rewardXP: 100,
+    rewardCash: 0,
+  },
+  first_deposit: {
     id: 'first_deposit',
     title: 'First Deposit',
-    description: 'Make your very first investment',
-    xpReward: 500,
+    description: 'Make your very first deposit',
+    icon: 'wallet-outline',
     type: 'achievement',
+    rewardXP: 50,
+    rewardCash: 2.00,
   },
-  {
-    id: 'gold_level',
-    title: 'Reach Gold Level',
-    description: 'Level up to the Gold tier',
-    xpReward: 1000,
+  first_vault: {
+    id: 'first_vault',
+    title: 'Open a Vault',
+    description: 'Invest in your first vault',
+    icon: 'cube-outline',
     type: 'achievement',
+    rewardXP: 100,
+    rewardCash: 0,
   },
-  {
-    id: 'referral_king',
-    title: 'Referral King',
-    description: 'Refer 10 friends total',
-    xpReward: 2000,
+  first_referral: {
+    id: 'first_referral',
+    title: 'First Referral',
+    description: 'Refer your first friend',
+    icon: 'person-add-outline',
     type: 'achievement',
-    progress: 0,
-    target: 10,
+    rewardXP: 75,
+    rewardCash: 5.00,
   },
-];
+  reach_level_5: {
+    id: 'reach_level_5',
+    title: 'Rising Star',
+    description: 'Reach Level 5',
+    icon: 'star-outline',
+    type: 'achievement',
+    rewardXP: 0,
+    rewardCash: 5.00,
+  },
+  reach_level_10: {
+    id: 'reach_level_10',
+    title: 'Veteran Player',
+    description: 'Reach Level 10',
+    icon: 'trophy-outline',
+    type: 'achievement',
+    rewardXP: 0,
+    rewardCash: 15.00,
+  },
+};
+
+export const MISSIONS_BY_TYPE = (type: MissionType): MissionDef[] =>
+  Object.values(MISSIONS_CONFIG).filter((m) => m.type === type);

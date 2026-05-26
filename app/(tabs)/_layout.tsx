@@ -1,11 +1,34 @@
 import { Tabs, Redirect } from 'expo-router';
-import { View, StyleSheet, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Image, StyleSheet, Platform } from 'react-native';
 import { COLORS } from '../../src/constants/colors';
 import { useAuthStore } from '../../src/store/authStore';
 
-function TabIcon({ name, color, size }: { name: any; color: string; size: number }) {
-  return <Ionicons name={name} size={size} color={color} />;
+const TAB_ICONS = {
+  home:        require('../../assets/home.png'),
+  missions:    require('../../assets/tasks.png'),
+  spin:        require('../../assets/spin.png'),
+  leaderboard: require('../../assets/leaderboard.png'),
+  referrals:   require('../../assets/referrals.png'),
+  vault:       require('../../assets/vault.png'),
+  profile:     require('../../assets/profile.png'),
+};
+
+function ImgIcon({
+  source,
+  focused,
+  size = 26,
+}: {
+  source: any;
+  focused: boolean;
+  size?: number;
+}) {
+  return (
+    <Image
+      source={source}
+      style={{ width: size, height: size, opacity: focused ? 1 : 0.45 }}
+      resizeMode="contain"
+    />
+  );
 }
 
 export default function TabsLayout() {
@@ -28,24 +51,26 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => <TabIcon name="home" color={color} size={size} />,
+          tabBarIcon: ({ focused, size }) => (
+            <ImgIcon source={TAB_ICONS.home} focused={focused} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
         name="missions"
         options={{
           title: 'Missions',
-          tabBarIcon: ({ color, size }) => <TabIcon name="trophy-outline" color={color} size={size} />,
+          tabBarIcon: ({ focused, size }) => (
+            <ImgIcon source={TAB_ICONS.missions} focused={focused} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
         name="spin"
         options={{
           title: 'Spin',
-          tabBarIcon: ({ color, size }) => (
-            <View style={[styles.spinIcon, { borderColor: color }]}>
-              <TabIcon name="refresh-circle" color={color} size={size + 4} />
-            </View>
+          tabBarIcon: ({ focused, size }) => (
+            <ImgIcon source={TAB_ICONS.spin} focused={focused} size={size + 6} />
           ),
         }}
       />
@@ -53,14 +78,18 @@ export default function TabsLayout() {
         name="vaults"
         options={{
           title: 'Vaults',
-          tabBarIcon: ({ color, size }) => <TabIcon name="cube-outline" color={color} size={size} />,
+          tabBarIcon: ({ focused, size }) => (
+            <ImgIcon source={TAB_ICONS.vault} focused={focused} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => <TabIcon name="person-outline" color={color} size={size} />,
+          tabBarIcon: ({ focused, size }) => (
+            <ImgIcon source={TAB_ICONS.profile} focused={focused} size={size} />
+          ),
         }}
       />
     </Tabs>
@@ -79,9 +108,5 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontSize: 11,
     fontWeight: '600',
-  },
-  spinIcon: {
-    borderRadius: 20,
-    padding: 2,
   },
 });

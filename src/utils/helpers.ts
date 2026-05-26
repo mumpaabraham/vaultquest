@@ -5,7 +5,7 @@ export const generateReferralCode = (displayName: string): string => {
 };
 
 export const formatCurrency = (amount: number): string => {
-  return `K${amount.toFixed(2)}`;
+  return `K${Math.floor(amount)}`;
 };
 
 export const formatNumber = (n: number): string => {

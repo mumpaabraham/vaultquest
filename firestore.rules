@@ -11,15 +11,82 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // ── Admin: full access to everything ───────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // ── App settings (read-only for signed-in users) ───────────────────────────
+    match /settings/{document} {
+      allow read: if isSignedIn();
+    }
+
+    // ── Investment packages (read-only for signed-in users) ────────────────────
+    match /packages/{packageId} {
+      allow read: if isSignedIn();
+    }
+
+    // ── Live Spins (real-time spin activity; admin-read only) ────────────────────
+    match /liveSpins/{userId} {
+      allow read: if isAdmin();
+      allow create, update: if isSignedIn()
+        && isOwner(userId)
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+
+    // ── Deposits (top-level; users create their own) ───────────────────────────
+    match /deposits/{depositId} {
+      allow read: if isSignedIn()
+        && (isOwner(resource.data.uid) || isAdmin());
+
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasAll([
+             'uid', 'userDisplayName', 'amount', 'mobileProvider',
+             'mobileNumber', 'payerName', 'status'
+           ])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.amount > 0;
+
+      allow update, delete: if false;
+    }
+
+    // ── Admins collection ──────────────────────────────────────────────────────
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+    }
+
+    // ── Broadcast notifications (admin write, signed-in read) ─────────────────
+    match /notifications/{notifId} {
+      allow read:  if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── App versions (admin write, public read) ────────────────────────────────
+    match /appVersions/{versionId} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // ── Download records (users create own, admin reads) ──────────────────────
+    match /downloads/{downloadId} {
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasAll(['uid', 'versionId', 'versionName', 'platform', 'downloadedAt']);
+      allow read: if isAdmin();
+    }
+
     // ── Users ──────────────────────────────────────────────────────────────────
-    // Any signed-in user can read profiles (leaderboard queries + referral lookups).
-    // Only the owner may write their own document; subcollections are always private.
     match /users/{userId} {
       allow get:  if isSignedIn();
       allow list: if isSignedIn();
 
-      // Registration: enforce sane starting values so no one can spawn an
-      // account with a pre-loaded balance or elevated level.
       allow create: if isSignedIn()
         && isOwner(userId)
         && request.resource.data.keys().hasAll([
@@ -30,20 +97,22 @@ service cloud.firestore {
         && request.resource.data.xp           == 0
         && request.resource.data.walletBalance == 0;
 
-      // Owner may update their own profile (level-ups, balance changes, etc.).
-      // They cannot change their own uid or email through Firestore.
       allow update: if isSignedIn()
         && isOwner(userId)
-        && request.resource.data.email == resource.data.email;
+        && request.resource.data.email      == resource.data.email
+        && request.resource.data.referredBy == resource.data.referredBy;
 
       allow delete: if false;
 
-      // ── Vaults ───────────────────────────────────────────────────────────────
-      // Only the account owner may read or manage their investment vaults.
+      // ── FCM token registration (user can only append own token) ─────────────
+      allow update: if isSignedIn()
+        && isOwner(userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['expoPushTokens']);
+
+      // ── Vaults ─────────────────────────────────────────────────────────────
       match /vaults/{vaultId} {
         allow read: if isSignedIn() && isOwner(userId);
 
-        // Require the essential fields and a valid starting state.
         allow create: if isSignedIn()
           && isOwner(userId)
           && request.resource.data.keys().hasAll([
@@ -55,8 +124,6 @@ service cloud.firestore {
           && request.resource.data.totalEarned == 0
           && request.resource.data.invested     >  0;
 
-        // Only allow updating mutable earning fields.
-        // Core fields (tierId, invested, startDate, endDate) are immutable.
         allow update: if isSignedIn()
           && isOwner(userId)
           && request.resource.data.tierId     == resource.data.tierId
@@ -67,8 +134,7 @@ service cloud.firestore {
         allow delete: if false;
       }
 
-      // ── Spin History ─────────────────────────────────────────────────────────
-      // Write-once records — no updates or deletes permitted.
+      // ── Spin History ────────────────────────────────────────────────────────
       match /spinHistory/{spinId} {
         allow read: if isSignedIn() && isOwner(userId);
 
@@ -80,8 +146,7 @@ service cloud.firestore {
         allow update, delete: if false;
       }
 
-      // ── Transactions ─────────────────────────────────────────────────────────
-      // Immutable ledger — no updates or deletes ever permitted.
+      // ── Transactions ────────────────────────────────────────────────────────
       match /transactions/{txId} {
         allow read: if isSignedIn() && isOwner(userId);
 
@@ -91,6 +156,18 @@ service cloud.firestore {
           && request.resource.data.type in ['deposit', 'withdrawal', 'earning', 'referral'];
 
         allow update, delete: if false;
+      }
+
+      // ── Mission Progress ────────────────────────────────────────────────────
+      match /missionProgress/{missionId} {
+        allow read: if isSignedIn() && isOwner(userId);
+        allow write: if false;
+      }
+
+      // ── Withdrawals ─────────────────────────────────────────────────────────
+      match /withdrawals/{wId} {
+        allow read: if isSignedIn() && isOwner(userId);
+        allow write: if false;
       }
     }
   }

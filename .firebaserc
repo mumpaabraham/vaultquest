@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "vaultquest-app"
-  }
+  },
+  "targets": {
+    "vaultquest-app": {
+      "hosting": {
+        "app": [
+          "vaultquest-app"
+        ],
+        "admin": [
+          "vaultquest-admin"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
